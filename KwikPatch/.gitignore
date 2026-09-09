@@ -1,0 +1,17 @@
+# Python / Backend
+__pycache__/
+*.py[cod]
+*.class
+.env
+backend/kwikpatch.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.eslintcache
+
+# OS Files
+.DS_Store
+Thumbs.db

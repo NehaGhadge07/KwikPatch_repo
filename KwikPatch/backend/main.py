@@ -3,6 +3,7 @@ import os
 import re
 
 import shutil
+from socket import socket
 
 import openpyxl
 
@@ -174,6 +175,8 @@ import traceback
 
 import sys
 
+import socket
+
 @app.middleware("http")
 
 async def exception_logging_middleware(request: Request, call_next):
@@ -232,8 +235,11 @@ def send_otp_email(email: str, otp: str, purpose: str = "register"):
         msg["Subject"] = subject
         msg["From"] = smtp_user
         msg["To"] = email
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
+        smtp_ip = socket.getaddrinfo(smtp_host, smtp_port, socket.AF_INET)[0][4][0]
+        with smtplib.SMTP(smtp_ip, smtp_port, timeout=15) as server:
+            server.ehlo(smtp_host)
             server.starttls()
+            server.ehlo(smtp_host)
             server.login(smtp_user, smtp_pass)
             server.send_message(msg)
         print(f"Email sent successfully to {email}")

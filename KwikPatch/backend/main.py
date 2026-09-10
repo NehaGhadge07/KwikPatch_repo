@@ -235,7 +235,7 @@ def send_otp_email(email: str, otp: str, purpose: str = "register"):
         msg["Subject"] = subject
         msg["From"] = "hr@nooral.ai"
         msg["To"] = email
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=60) as server:
             server.ehlo()
             server.starttls()
             server.ehlo()

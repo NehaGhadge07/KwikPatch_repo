@@ -231,37 +231,30 @@ def send_otp_email(email: str, otp: str, purpose: str = "register"):
         return
 
     try:
-        msg = MIMEText(body)
-        msg["Subject"] = subject
-        msg["From"] = "hr@nooral.ai"
-        msg["To"] = email
+        brevo_api_key = os.environ.get("BREVO_API_KEY", "")
+        if not brevo_api_key:
+            print("ERROR: BREVO_API_KEY environment variable is not set. Cannot send email.")
+            return
 
-        addr_infos = socket.getaddrinfo(smtp_host, smtp_port, socket.AF_INET)
-        last_error = None
-        sent = False
-
-        for info in addr_infos:
-            candidate_ip = info[4][0]
-            try:
-                with smtplib.SMTP(candidate_ip, smtp_port, timeout=10) as server:
-                    server.ehlo(smtp_host)
-                    server.starttls()
-                    server.ehlo(smtp_host)
-                    server.login(smtp_user, smtp_pass)
-                    server.send_message(msg)
-                sent = True
-                break
-            except Exception as inner_ex:
-                last_error = inner_ex
-                continue
-
-        if sent:
-            print(f"Email sent successfully to {email}")
-        else:
-            print(f"SMTP send failed on all resolved IPs: {last_error}")
-
+        import urllib.request
+        import json
+        req = urllib.request.Request(
+            "https://api.brevo.com/v3/smtp/email",
+            data=json.dumps({
+                "sender": {"email": "hr@nooral.ai", "name": "KwikPatch"},
+                "to": [{"email": email}],
+                "subject": subject,
+                "textContent": body
+            }).encode('utf-8'),
+            headers={
+                "api-key": brevo_api_key,
+                "Content-Type": "application/json"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            print(f"Email sent successfully via Brevo API to {email}.")
     except Exception as ex:
-        print(f"SMTP send failed: {ex}")
+        print(f"Email send failed: {ex}")
 
 def log_auth_event(conn, event: str, email: str = None, mobile: str = None, status: str = "success", detail: str = None):
     try:

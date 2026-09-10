@@ -235,11 +235,10 @@ def send_otp_email(email: str, otp: str, purpose: str = "register"):
         msg["Subject"] = subject
         msg["From"] = "hr@nooral.ai"
         msg["To"] = email
-        smtp_ip = socket.getaddrinfo(smtp_host, smtp_port, socket.AF_INET)[0][4][0]
-        with smtplib.SMTP(smtp_ip, smtp_port, timeout=15) as server:
-            server.ehlo(smtp_host)
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
+            server.ehlo()
             server.starttls()
-            server.ehlo(smtp_host)
+            server.ehlo()
             server.login(smtp_user, smtp_pass)
             server.send_message(msg)
         print(f"Email sent successfully to {email}")

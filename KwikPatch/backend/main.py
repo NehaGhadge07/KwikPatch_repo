@@ -235,13 +235,31 @@ def send_otp_email(email: str, otp: str, purpose: str = "register"):
         msg["Subject"] = subject
         msg["From"] = "hr@nooral.ai"
         msg["To"] = email
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=60) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(smtp_user, smtp_pass)
-            server.send_message(msg)
-        print(f"Email sent successfully to {email}")
+
+        addr_infos = socket.getaddrinfo(smtp_host, smtp_port, socket.AF_INET)
+        last_error = None
+        sent = False
+
+        for info in addr_infos:
+            candidate_ip = info[4][0]
+            try:
+                with smtplib.SMTP(candidate_ip, smtp_port, timeout=10) as server:
+                    server.ehlo(smtp_host)
+                    server.starttls()
+                    server.ehlo(smtp_host)
+                    server.login(smtp_user, smtp_pass)
+                    server.send_message(msg)
+                sent = True
+                break
+            except Exception as inner_ex:
+                last_error = inner_ex
+                continue
+
+        if sent:
+            print(f"Email sent successfully to {email}")
+        else:
+            print(f"SMTP send failed on all resolved IPs: {last_error}")
+
     except Exception as ex:
         print(f"SMTP send failed: {ex}")
 
